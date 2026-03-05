@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weather Tracker App</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 30px;
+      background: linear-gradient(135deg, #c2e9fb 0%, #a1c4fd 100%);
+      color: #1a1a1a;
+      min-height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #004e92;
+      margin-bottom: 25px;
+      font-size: 2.8em;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.6);
+    }
+    div {
+      background-color: #ffffffdd;
+      padding: 20px 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+      max-width: 900px;
+      margin: 0 auto 40px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    input, select {
+      padding: 12px 14px;
+      border: 1.8px solid #7abaff;
+      border-radius: 8px;
+      font-size: 1.1em;
+      min-width: 140px;
+      transition: border-color 0.3s ease;
+      box-shadow: 0 2px 6px rgba(122,186,255,0.3);
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #004e92;
+      box-shadow: 0 4px 8px rgba(0,78,146,0.6);
+      background-color: #e9f5ff;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1em;
+      background: linear-gradient(45deg, #004e92, #7abaff);
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 5px 15px rgba(0,78,146,0.6);
+      transition: background 0.3s ease;
+      min-width: 140px;
+    }
+    button:hover {
+      background: linear-gradient(45deg, #003766, #9acbff);
+    }
+    table {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: #ffffffdd;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      font-size: 1.1em;
+    }
+    th {
+      background-color: #004e92;
+      color: white;
+      padding: 16px 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #dceeff;
+      color: #333;
+    }
+    tr:nth-child(even) {
+      background-color: #eef7ff;
+    }
+    tr:hover {
+      background-color: #d1ebff;
+    }
+    .edit-btn, .delete-btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      margin-right: 6px;
+    }
+    .edit-btn {
+      background-color: #4099ff;
+      color: white;
+    }
+    .edit-btn:hover {
+      background-color: #006edc;
+    }
+    .delete-btn {
+      background-color: #e84545;
+      color: white;
+    }
+    .delete-btn:hover {
+      background-color: #b73232;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weather Tracker</h1>
+  <div>
+    <input type="text" id="city" placeholder="City Name" />
+    <input type="number" id="temperature" placeholder="Temperature (°C)" />
+    <select id="condition">
+      <option value="Sunny">☀ Sunny</option>
+      <option value="Cloudy">☁ Cloudy</option>
+      <option value="Rainy">🌧 Rainy</option>
+      <option value="Stormy">⛈ Stormy</option>
+      <option value="Snowy">❄ Snowy</option>
+    </select>
+    <input type="date" id="date" />
+    <button onclick="addWeather()">Add Weather</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>City</th>
+        <th>Temperature</th>
+        <th>Condition</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="weatherTable"></tbody>
+  </table>
+
+  <script>
+    let weatherData = JSON.parse(localStorage.getItem("weatherData")) || [];
+
+    function renderTable() {
+      weatherData.sort((a, b) => a.city.localeCompare(b.city));
+      const table = document.getElementById("weatherTable");
+      table.innerHTML = "";
+      weatherData.forEach((w, index) => {
+        table.innerHTML += `
+          <tr>
+            <td>${w.city}</td>
+            <td>${w.temp} °C</td>
+            <td>${w.condition}</td>
+            <td>${w.date}</td>
+            <td>
+              <button class="edit-btn" onclick="editWeather(${index})">Edit</button>
+              <button class="delete-btn" onclick="deleteWeather(${index})">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function addWeather() {
+      const city = document.getElementById("city").value.trim();
+      const temp = document.getElementById("temperature").value;
+      const condition = document.getElementById("condition").value;
+      const date = document.getElementById("date").value;
+
+      if (!city || temp === "" || !condition || !date) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const entry = { city, temp, condition, date };
+      weatherData.push(entry);
+      localStorage.setItem("weatherData", JSON.stringify(weatherData));
+      renderTable();
+      clearInputs();
+    }
+
+    function deleteWeather(index) {
+      weatherData.splice(index, 1);
+      localStorage.setItem("weatherData", JSON.stringify(weatherData));
+      renderTable();
+    }
+
+    function editWeather(index) {
+      const w = weatherData[index];
+      document.getElementById("city").value = w.city;
+      document.getElementById("temperature").value = w.temp;
+      document.getElementById("condition").value = w.condition;
+      document.getElementById("date").value = w.date;
+      weatherData.splice(index, 1);
+      localStorage.setItem("weatherData", JSON.stringify(weatherData));
+      renderTable();
+    }
+
+    function clearInputs() {
+      document.getElementById("city").value = "";
+      document.getElementById("temperature").value = "";
+      document.getElementById("condition").value = "Sunny";
+      document.getElementById("date").value = "";
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
